@@ -4,6 +4,7 @@
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Background](#background)
 - [Usage](#usage)
   - [Build \& deploy](#build--deploy)
@@ -24,6 +25,12 @@ This repo contains starter code for building [`@tableland`](https://github.com/t
 - Other useful scripts and packages for local deployment, formatting, and testing—including `prettier`, `eslint`, `solhint`, and Hardhat configuration setup.
 
 ## Usage
+
+First, clone this repo:
+
+```sh
+git clone https://github.com/tablelandnetwork/hardhat-ts-tableland-template
+```
 
 ### Build & deploy
 
