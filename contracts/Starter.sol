@@ -7,16 +7,19 @@ import {TablelandPolicy} from "@tableland/evm/contracts/TablelandPolicy.sol";
 import {TablelandDeployments} from "@tableland/evm/contracts/utils/TablelandDeployments.sol";
 import {SQLHelpers} from "@tableland/evm/contracts/utils/SQLHelpers.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import {ITablelandTables} from "@tableland/evm/contracts/interfaces/ITablelandTables.sol";
 
 // Starter template for contract owned and controlled tables
 contract Starter is TablelandController, ERC721Holder {
     uint256 private tableId; // Unique table ID
     string private constant _TABLE_PREFIX = "starter_table"; // Custom table prefix
+    ITablelandTables private immutable tableland;
 
     // Constructor that creates a table, sets the controller, and inserts data
     constructor() {
+        tableland = TablelandDeployments.get();
         // Create a table
-        tableId = TablelandDeployments.get().create(
+        tableId = tableland.create(
             address(this),
             SQLHelpers.toCreateFromSchema(
                 "id integer primary key,"
@@ -25,7 +28,7 @@ contract Starter is TablelandController, ERC721Holder {
             )
         );
         // Set the ACL controller to enable writes to others besides the table owner
-        TablelandDeployments.get().setController(
+        tableland.setController(
             address(this), // Table owner, i.e., this contract
             tableId,
             address(this) // Set the controller address—also this contract
@@ -39,7 +42,7 @@ contract Starter is TablelandController, ERC721Holder {
 
     // Insert a row into the table from an external call (`id` will autoincrement)
     function insertVal(string memory val) external {
-        TablelandDeployments.get().mutate(
+        tableland.mutate(
             address(this),
             tableId,
             SQLHelpers.toInsert(
@@ -56,7 +59,7 @@ contract Starter is TablelandController, ERC721Holder {
         string memory setters = string.concat("val=", SQLHelpers.quote(val));
         string memory filters = string.concat("id=", Strings.toString(id));
         // Mutate a row at `id` with a new `val`
-        TablelandDeployments.get().mutate(
+        tableland.mutate(
             address(this),
             tableId,
             SQLHelpers.toUpdate(_TABLE_PREFIX, tableId, setters, filters)
@@ -67,7 +70,7 @@ contract Starter is TablelandController, ERC721Holder {
     function deleteVal(uint64 id) external {
         string memory filters = string.concat("id=", Strings.toString(id));
         // Mutate by deleting the row at `id`
-        TablelandDeployments.get().mutate(
+        tableland.mutate(
             address(this),
             tableId,
             SQLHelpers.toDelete(_TABLE_PREFIX, tableId, filters)
