@@ -34,8 +34,8 @@
     "@openzeppelin/contracts-upgradeable": "^4.9.3",
     "@openzeppelin/hardhat-upgrades": "^1.28.0",
     "@tableland/hardhat": "^0.0.8",
-    "@tableland/local": "^2.3.0",
-    "@tableland/sdk": "^5.2.0",
+    "@tableland/local": "^2.4.1",
+    "@tableland/sdk": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "chai-as-promised": "^7.1.1",
@@ -54,6 +54,6 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.3",
-    "@tableland/evm": "^4.5.1"
+    "@tableland/evm": "^5.0.0"
   }
 }
