@@ -8,5 +8,6 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["./test"]
+  "include": ["./test", "./scripts"],
+  "files": ["./hardhat.config.ts"]
 }

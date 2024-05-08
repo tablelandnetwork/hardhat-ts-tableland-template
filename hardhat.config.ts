@@ -1,11 +1,22 @@
 import * as dotenv from "dotenv";
+import { HardhatUserConfig, extendEnvironment } from "hardhat/config";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import "hardhat-dependency-compiler";
+import "hardhat-gas-reporter";
+import "hardhat-contract-sizer";
+import "solidity-coverage";
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-verify";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@openzeppelin/hardhat-upgrades";
 import "@tableland/hardhat";
-import { HardhatUserConfig } from "hardhat/config";
-import "hardhat-dependency-compiler";
+import "@typechain/hardhat";
+
 dotenv.config();
+
+// Replace with your deployed contract address
+export const deployedContract = "";
 
 const homestead = {
   url: `https://eth-mainnet.alchemyapi.io/v2/${
@@ -38,7 +49,7 @@ const config: HardhatUserConfig = {
     currency: "USD",
   },
   localTableland: {
-    silent: false,
+    silent: true,
     verbose: false,
   },
   etherscan: {
@@ -48,16 +59,26 @@ const config: HardhatUserConfig = {
       sepolia: process.env.ETHERSCAN_API_KEY || "",
       // optimism
       optimisticEthereum: process.env.OPTIMISM_ETHERSCAN_API_KEY || "",
-      optimisticGoerli: process.env.OPTIMISM_ETHERSCAN_API_KEY || "",
+      optimisticSepolia: process.env.OPTIMISM_ETHERSCAN_API_KEY || "",
       // arbitrum
       arbitrumOne: process.env.ARBISCAN_API_KEY || "",
       arbitrumNova: process.env.ARBISCAN_NOVA_API_KEY || "",
       arbitrumSepolia: process.env.ARBISCAN_API_KEY || "",
       // polygon
-      polygon: process.env.POLYGONSCAN_API_KEY || "",
-      polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
+      polygon: process.env.POLYSCAN_API_KEY || "",
+      polygonAmoy: process.env.POLYSCAN_API_KEY || "",
     },
     customChains: [
+      // optimism
+      {
+        network: "optimisticSepolia",
+        chainId: 11155420,
+        urls: {
+          apiURL: "https://api-sepolia-optimistic.etherscan.io/api",
+          browserURL: "https://sepolia-optimism.etherscan.io/",
+        },
+      },
+      // arbitrum
       {
         network: "arbitrumNova",
         chainId: 42170,
@@ -72,6 +93,15 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-sepolia.arbiscan.io/api",
           browserURL: "https://sepolia.arbiscan.io/",
+        },
+      },
+      // polygon
+      {
+        network: "polygonAmoy",
+        chainId: 80002,
+        urls: {
+          apiURL: "https://api-amoy.polygonscan.com/api",
+          browserURL: "https://amoy.polygonscan.com/",
         },
       },
     ],
@@ -99,15 +129,13 @@ const config: HardhatUserConfig = {
           : [],
     },
     "arbitrum-nova": {
-      url: `https://skilled-yolo-mountain.nova-mainnet.discover.quiknode.pro/${
-        process.env.ARBITRUM_NOVA_API_KEY ?? ""
-      }`,
+      url: `https://arbitrum-one-rpc.publicnode.com/${process.env.ARBITRUM_NOVA_API_KEY ?? ""}`,
       accounts:
         process.env.ARBITRUM_NOVA_PRIVATE_KEY !== undefined
           ? [process.env.ARBITRUM_NOVA_PRIVATE_KEY]
           : [],
     },
-    matic: {
+    polygon: {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${
         process.env.POLYGON_API_KEY ?? ""
       }`,
@@ -136,11 +164,11 @@ const config: HardhatUserConfig = {
     },
     "optimism-goerli": {
       url: `https://opt-goerli.g.alchemy.com/v2/${
-        process.env.OPTIMISM_GOERLI_API_KEY ?? ""
+        process.env.OPTIMISM_SEPOLIA_API_KEY ?? ""
       }`,
       accounts:
-        process.env.OPTIMISM_GOERLI_PRIVATE_KEY !== undefined
-          ? [process.env.OPTIMISM_GOERLI_PRIVATE_KEY]
+        process.env.OPTIMISM_SEPOLIA_PRIVATE_KEY !== undefined
+          ? [process.env.OPTIMISM_SEPOLIA_PRIVATE_KEY]
           : [],
     },
     "arbitrum-sepolia": {
@@ -152,13 +180,13 @@ const config: HardhatUserConfig = {
           ? [process.env.ARBITRUM_SEPOLIA_PRIVATE_KEY]
           : [],
     },
-    maticmum: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/${
-        process.env.POLYGON_MUMBAI_API_KEY ?? ""
+    "polygon-amoy": {
+      url: `https://polygon-amoy.g.alchemy.com/v2/${
+        process.env.POLYGON_AMOY_API_KEY ?? ""
       }`,
       accounts:
-        process.env.POLYGON_MUMBAI_PRIVATE_KEY !== undefined
-          ? [process.env.POLYGON_MUMBAI_PRIVATE_KEY]
+        process.env.POLYGON_AMOY_PRIVATE_KEY !== undefined
+          ? [process.env.POLYGON_AMOY_PRIVATE_KEY]
           : [],
     },
     "filecoin-calibration": {
@@ -170,6 +198,27 @@ const config: HardhatUserConfig = {
       timeout: 60_000,
     },
   },
+  deployedContract,
 };
+
+declare module "hardhat/types/config" {
+  // eslint-disable-next-line no-unused-vars
+  interface HardhatUserConfig {
+    deployedContract: string;
+  }
+}
+
+declare module "hardhat/types/runtime" {
+  // eslint-disable-next-line no-unused-vars
+  interface HardhatRuntimeEnvironment {
+    deployedContract: string;
+  }
+}
+
+extendEnvironment((hre: HardhatRuntimeEnvironment) => {
+  // Get contract address for user-selected network
+  const contract = hre.userConfig.deployedContract;
+  hre.deployedContract = contract;
+});
 
 export default config;
